@@ -1,0 +1,38 @@
+---
+title: "econ-homework4"
+author: "Kristin Gill and Alyssa Kibbe"
+date: "5/17/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+```{r}
+# read in the data
+damages <- read_csv(here("data", "damages.csv"))
+
+warming <- read_csv(here("data", "warming.csv"))
+```
+
+```{r}
+# graphing damages vs. warming
+ggplot(data = damages, aes(x = warming,
+                           y = damages)) +
+  geom_point() +
+  theme_minimal()+
+  labs(x = "Warming (Degrees Celsius)",
+       y = "Damages (Dollars)") +
+  geom_smooth(method = "lm",
+              formula = y ~ I(x^2),
+              color = "black",
+              size = 0.5,
+              fill = "gray10",
+              alpha = 0.5) +
+  ggpubr::stat_regline_equation(label.x = 4, label.y = 100000000000000)
+```
+
