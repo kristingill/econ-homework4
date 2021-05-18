@@ -93,7 +93,7 @@ r <- seq.int(from = 0.01, to = 0.8, by = 0.01)
 y <- NULL
 
 for (i in r) {
-  pv <- sum((warming$warming_baseline/(1 + i)^warming$time))
+  pv <- sum((warming_scenarios$damages_baseline/(1 + i)^warming_scenarios$X1))
   y <- rbind(y, c(i, pv))
 }
 
@@ -108,5 +108,60 @@ ggplot(data = scc, aes(x = discount_rate,
   theme_minimal() +
   labs(x = "Discount Rate",
        y = "scc")
+```
+```{r}
+r_ramsey <- (0.001 + (2*0.01))
+
+x <- NULL
+
+for (i in r_ramsey) {
+  pv <- sum((warming_scenarios$damages_baseline/(1 + i)^warming_scenarios$X1))
+  x <- rbind(x, c(i, pv))
+}
+
+point <- data.frame(x)
+
+# discount rate is 0.021 (2.1%) and SCC is 1.714883e+15
+
+ggplot(data = scc, aes(x = discount_rate,
+                       y = scc)) +
+  geom_line()+
+  theme_minimal() +
+  labs(x = "Discount Rate",
+       y = "scc") +
+  geom_point(data = point, aes(x = X1,
+                           y = X2),
+             color = "blue",
+             size = 3)
+```
+
+```{r}
+#5 
+
+# Policy A: BAU
+BAU <- warming %>% 
+  select(time, year, warming_baseline) %>% # probability 0.5
+  mutate(warming_1.5 = (warming_baseline*1.5)) %>% # probability 0.5
+  mutate(damages_baseline = ((warming_baseline*warming_baseline)*(2e13))-((3e12)*warming_baseline)) %>% 
+  mutate(damages_1.5 = ((warming_1.5*warming_1.5)*(2e13))-((3e12)*warming_1.5)) %>% 
+  mutate(expected_damage = (0.5*damages_baseline) + (0.5*damages_1.5))
+
+pv_A <- sum((BAU$expected_damage/(1 + 0.02)^BAU$time))
+pv_A
+
+# Policy B
+policy_b <- warming %>% 
+  select(time, year, warming_baseline) %>% 
+  mutate(warming_baseline = case_when(
+    year > 2050 ~ 1.29,
+    TRUE ~ as.numeric(as.character(warming_baseline))
+  )) %>% 
+  mutate(damages = ((warming_baseline*warming_baseline)*(2e13))-((3e12)*warming_baseline))
+
+pv_B <- sum((policy_b$damages/(1 + 0.02)^policy_b$time))
+pv_B
+
+x <- (pv_A - pv_B)
+x
 ```
 
