@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(janitor)
+library(patchwork)
 ```
 
 ```{r}
@@ -28,11 +29,60 @@ ggplot(data = damages, aes(x = warming,
   labs(x = "Warming (Degrees Celsius)",
        y = "Damages (Dollars)") +
   geom_smooth(method = "lm",
-              formula = y ~ I(x^2),
+              formula = y ~ x + I(x^2),
               color = "black",
               size = 0.5,
               fill = "gray10",
               alpha = 0.5) +
-  ggpubr::stat_regline_equation(label.x = 4, label.y = 100000000000000)
+  ggpubr::stat_regline_equation(label.x = 4, label.y = 100000000000000, formula = y ~ x + I(x^2))
+```
+
+```{r}
+# 2 damages under different scenarios
+warming_scenarios <- warming%>% 
+  mutate(damages_baseline = ((warming_baseline*warming_baseline)*(2e13))-((3e12)*warming_baseline)) %>% 
+  mutate(damages_pulse = ((warming_pulse*warming_pulse)*(2e13))-((3e12)*warming_pulse)) %>% 
+  mutate(damages_difference = (damages_pulse - damages_baseline)) %>% 
+  mutate(diff_per_ton = (damages_difference/3e9))
+
+# plots
+# damages over time without the pulse
+base <- ggplot(data = warming_scenarios, aes(x = year,
+                                     y = damages_baseline)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "Time(years)",
+       y = "Baseline Damages ($)",
+       title = "Projected Baseline Damages")
+
+# damages over time WITH the pulse
+pulse <- ggplot(data = warming_scenarios, aes(x = year,
+                                     y = damages_pulse)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "Time(years)",
+       y = "Pulse Damages ($)",
+       title = "Projected Pulse Damages")
+
+# the difference in damages over time that arises from the pulse
+diff <- ggplot(data = warming_scenarios, aes(x = year,
+                                     y = damages_difference)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "Time(years)",
+       y = "Difference in Damages ($)",
+       title = "Difference due to Pulse")
+
+# the difference in damages over time from the pulse per ton of CO2
+diff_per_ton <- ggplot(data = warming_scenarios, aes(x = year,
+                                     y = diff_per_ton)) +
+  geom_line() +
+  theme_minimal() +
+  labs(x = "Time(years)",
+       y = "Difference ($/Ton CO2)",
+       title = "Difference/Ton of CO2")
+
+graph_compound <- ((base|pulse)/(diff|diff_per_ton)) & plot_layout(guides = "collect")
+graph_compound
 ```
 
