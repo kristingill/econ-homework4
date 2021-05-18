@@ -17,7 +17,8 @@ library(patchwork)
 # read in the data
 damages <- read_csv(here("data", "damages.csv"))
 
-warming <- read_csv(here("data", "warming.csv"))
+warming <- read_csv(here("data", "warming.csv")) %>% 
+  rename("time" = "X1")
 ```
 
 ```{r}
@@ -84,5 +85,28 @@ diff_per_ton <- ggplot(data = warming_scenarios, aes(x = year,
 
 graph_compound <- ((base|pulse)/(diff|diff_per_ton)) & plot_layout(guides = "collect")
 graph_compound
+```
+
+```{r}
+#3 SCC
+r <- seq.int(from = 0.01, to = 0.8, by = 0.01)
+y <- NULL
+
+for (i in r) {
+  pv <- sum((warming$warming_baseline/(1 + i)^warming$time))
+  y <- rbind(y, c(i, pv))
+}
+
+scc <- data.frame(y) %>% 
+  rename("discount_rate" = "X1") %>% 
+  rename("scc" = "X2")
+
+# plotting it
+ggplot(data = scc, aes(x = discount_rate,
+                       y = scc)) +
+  geom_line()+
+  theme_minimal() +
+  labs(x = "Discount Rate",
+       y = "scc")
 ```
 
