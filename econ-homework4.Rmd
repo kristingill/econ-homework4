@@ -93,7 +93,7 @@ r <- seq.int(from = 0.01, to = 0.8, by = 0.01)
 y <- NULL
 
 for (i in r) {
-  pv <- sum((warming_scenarios$damages_baseline/(1 + i)^warming_scenarios$X1))
+  pv <- sum((warming_scenarios$diff_per_ton/(1 + i)^warming_scenarios$time))
   y <- rbind(y, c(i, pv))
 }
 
@@ -107,7 +107,7 @@ ggplot(data = scc, aes(x = discount_rate,
   geom_line()+
   theme_minimal() +
   labs(x = "Discount Rate",
-       y = "scc")
+       y = "SCC (Dollars)")
 ```
 ```{r}
 r_ramsey <- (0.001 + (2*0.01))
@@ -115,20 +115,20 @@ r_ramsey <- (0.001 + (2*0.01))
 x <- NULL
 
 for (i in r_ramsey) {
-  pv <- sum((warming_scenarios$damages_baseline/(1 + i)^warming_scenarios$X1))
+  pv <- sum((warming_scenarios$diff_per_ton/(1 + i)^warming_scenarios$time))
   x <- rbind(x, c(i, pv))
 }
 
 point <- data.frame(x)
 
-# discount rate is 0.021 (2.1%) and SCC is 1.714883e+15
+# discount rate is 0.021 (2.1%) and SCC is 815.9167
 
 ggplot(data = scc, aes(x = discount_rate,
                        y = scc)) +
   geom_line()+
   theme_minimal() +
   labs(x = "Discount Rate",
-       y = "scc") +
+       y = "SCC (Dollars)") +
   geom_point(data = point, aes(x = X1,
                            y = X2),
              color = "blue",
