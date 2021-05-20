@@ -44,7 +44,7 @@ warming_scenarios <- warming%>%
   mutate(damages_baseline = ((warming_baseline*warming_baseline)*(2e13))-((3e12)*warming_baseline)) %>% 
   mutate(damages_pulse = ((warming_pulse*warming_pulse)*(2e13))-((3e12)*warming_pulse)) %>% 
   mutate(damages_difference = (damages_pulse - damages_baseline)) %>% 
-  mutate(diff_per_ton = (damages_difference/3e9))
+  mutate(diff_per_ton = (damages_difference/35e9))
 
 # plots
 # damages over time without the pulse
