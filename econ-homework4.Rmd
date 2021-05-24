@@ -11,6 +11,7 @@ library(tidyverse)
 library(here)
 library(janitor)
 library(patchwork)
+library(kableExtra)
 ```
 
 ```{r}
@@ -89,7 +90,7 @@ graph_compound
 
 ```{r}
 #3 SCC
-r <- seq.int(from = 0.01, to = 0.8, by = 0.01)
+r <- seq.int(from = 0.01, to = 0.1, by = 0.01)
 y <- NULL
 
 for (i in r) {
@@ -99,17 +100,30 @@ for (i in r) {
 
 scc <- data.frame(y) %>% 
   rename("discount_rate" = "X1") %>% 
-  rename("scc" = "X2")
+  rename("scc" = "X2") %>% 
+  mutate(percent_r = 100*discount_rate) %>% 
+  select(!discount_rate)
 
 # plotting it
-ggplot(data = scc, aes(x = discount_rate,
+ggplot(data = scc, aes(x = percent_r,
                        y = scc)) +
   geom_line()+
   theme_minimal() +
-  labs(x = "Discount Rate",
+  labs(x = "Discount Rate (%)",
        y = "SCC (Dollars)")
+
+scc_new <- scc %>% 
+  rename("Discount Rate" = "percent_r") %>% 
+  rename("SCC" = "scc")
+
+kbl(scc_new) %>% 
+   kable_styling(latex_options = c("striped", "hold_position"),
+                full_width = F)
 ```
+
 ```{r}
+#4 
+
 r_ramsey <- (0.001 + (2*0.01))
 
 x <- NULL
@@ -119,17 +133,18 @@ for (i in r_ramsey) {
   x <- rbind(x, c(i, pv))
 }
 
-point <- data.frame(x)
+point <- data.frame(x) %>% 
+  mutate(r = X1*100)
 
-# discount rate is 0.021 (2.1%) and SCC is 815.9167
+# discount rate is 0.021 (2.1%) and SCC is 69.93572
 
-ggplot(data = scc, aes(x = discount_rate,
+ggplot(data = scc, aes(x = percent_r,
                        y = scc)) +
   geom_line()+
   theme_minimal() +
-  labs(x = "Discount Rate",
+  labs(x = "Discount Rate (%)",
        y = "SCC (Dollars)") +
-  geom_point(data = point, aes(x = X1,
+  geom_point(data = point, aes(x = r,
                            y = X2),
              color = "blue",
              size = 3)
@@ -148,6 +163,16 @@ BAU <- warming %>%
 
 pv_A <- sum((BAU$expected_damage/(1 + 0.02)^BAU$time))
 pv_A
+
+# test for policy A
+pv_A1 <- sum((BAU$damages_baseline/(1 + 0.02)^BAU$time))
+pv_A1
+
+pv_A2 <- sum((BAU$damages_1.5/(1 + 0.02)^BAU$time))
+pv_A2
+
+pv_expected <- (0.5*pv_A1) + (0.5*pv_A2)
+pv_expected
 
 # Policy B
 policy_b <- warming %>% 
